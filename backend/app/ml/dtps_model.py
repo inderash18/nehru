@@ -56,3 +56,32 @@ def get_ml_score(attendance: float, recency: float, distance: float) -> float:
     except Exception as e:
         logging.error(f"ML Prediction failed: {e}")
         return ((attendance + recency + (1 - distance)) / 3) * 100
+
+def calculate_dtps(factors: dict) -> dict:
+    """
+    High-level API for DTPS calculation.
+    Combines rules + ML.
+    """
+    attendance = factors.get("attendance_rate", 0.5)
+    recency = 1.0 if factors.get("last_donation_months", 12) >= 3 else 0.5
+    distance = factors.get("distance_score", 0.5)
+    
+    ml_score = get_ml_score(attendance, recency, distance)
+    
+    # Rule engine impact
+    rule_score = 0
+    if factors.get("attendance_rate", 0) > 0.8: rule_score += 10
+    if factors.get("is_emergency", False): rule_score += 20
+    
+    final_score = min(100, (ml_score * 0.7) + (rule_score * 1.5))
+    
+    return {
+        "final_score": round(final_score, 2),
+        "ml_score": round(ml_score, 2),
+        "rule_impact": rule_score,
+        "factors": {
+            "attendance": attendance,
+            "recency": recency,
+            "distance": distance
+        }
+    }

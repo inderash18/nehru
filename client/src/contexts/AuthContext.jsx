@@ -17,11 +17,12 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const data = await authService.login(email, password);
-        // decode token or fetch user profile
-        const userData = { email, role: 'donor', id: '1' }; // Mock decode
+        localStorage.setItem('token', data.access_token);
+
+        // Fetch real profile
+        const userData = await authService.getMe();
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('token', data.access_token);
         return userData;
     };
 

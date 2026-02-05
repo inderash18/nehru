@@ -1,42 +1,44 @@
-import { motion } from 'framer-motion';
+import { Droplet, AlertCircle, Check } from 'lucide-react';
 
 const BloodStockCard = ({ type, units, status }) => {
     const getStatusColor = () => {
-        if (status === 'critical') return 'bg-red-500';
-        if (status === 'low') return 'bg-yellow-500';
-        return 'bg-green-500';
+        if (status === 'critical') return 'bg-red-50 border-red-200 text-red-700';
+        if (status === 'low') return 'bg-yellow-50 border-yellow-200 text-yellow-700';
+        return 'bg-green-50 border-green-200 text-green-700';
     };
 
-    const getStatusText = () => {
-        if (status === 'critical') return 'Emergency';
-        if (status === 'low') return 'Low Stock';
-        return 'Adequate';
+    const getStatusIcon = () => {
+        if (status === 'critical') return AlertCircle;
+        if (status === 'low') return AlertCircle;
+        return Check;
     };
+
+    const StatusIcon = getStatusIcon();
 
     return (
-        <motion.div
-            whileHover={{ scale: 1.05 }}
-            className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col items-center text-center relative overflow-hidden"
-        >
-            <div className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-bold text-white uppercase ${getStatusColor()}`}>
-                {getStatusText()}
+        <div className="card hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <Droplet className="w-5 h-5 text-primary" />
+                </div>
+                <div className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${getStatusColor()}`}>
+                    <StatusIcon className="w-3 h-3" />
+                    {status}
+                </div>
             </div>
 
-            <div className="w-16 h-16 blood-gradient rounded-2xl flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-lg shadow-blood/30">
-                {type}
-            </div>
+            <div className="text-center">
+                <div className="text-3xl font-bold text-gray-900 mb-1">{type}</div>
+                <div className="text-sm text-gray-600 mb-4">{units} units</div>
 
-            <p className="text-3xl font-extrabold text-medical-navy mb-1">{units}</p>
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider">Units Available</p>
-
-            <div className="w-full mt-6 bg-gray-100 h-2 rounded-full overflow-hidden">
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min((units / 50) * 100, 100)}%` }}
-                    className={`h-full ${getStatusColor()}`}
-                />
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                        className={`h-2 rounded-full ${status === 'critical' ? 'bg-red-500' : status === 'low' ? 'bg-yellow-500' : 'bg-green-500'}`}
+                        style={{ width: `${Math.min((units / 50) * 100, 100)}%` }}
+                    />
+                </div>
             </div>
-        </motion.div>
+        </div>
     );
 };
 

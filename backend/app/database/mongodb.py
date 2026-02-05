@@ -11,8 +11,14 @@ db_instance = MongoDB()
 async def connect_to_mongo():
     logging.info("Connecting to MongoDB...")
     db_instance.client = AsyncIOMotorClient(settings.MONGODB_URL)
-    db_instance.db = db_instance.client[settings.DATABASE_NAME]
-    logging.info("Connected to MongoDB!")
+    # Ping the database to ensure connection
+    try:
+        await db_instance.client.admin.command('ping')
+        db_instance.db = db_instance.client[settings.DATABASE_NAME]
+        logging.info("Connected to MongoDB!")
+    except Exception as e:
+        logging.error(f"Failed to connect to MongoDB: {e}")
+        raise e
 
 async def close_mongo_connection():
     logging.info("Closing MongoDB connection...")

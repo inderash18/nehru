@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { User, Mail, Lock, Phone, Droplet, MapPin, ArrowRight } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
+import { User, Mail, Lock, Phone, MapPin, Droplet } from 'lucide-react';
+import authService from '../services/authService';
 
 const RegisterPage = () => {
     const [formData, setFormData] = useState({
@@ -10,154 +9,150 @@ const RegisterPage = () => {
         email: '',
         password: '',
         phone: '',
-        blood_type: '',
-        city: '',
-        state: ''
+        blood_type: 'O+',
+        address: { city: '', state: '' },
+        role: 'donor'
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // In a real app, call authService.register
-        console.log('Registering:', formData);
-        navigate('/login');
+        setLoading(true);
+        setError(null);
+        try {
+            await authService.register(formData);
+            navigate('/login');
+        } catch (err) {
+            setError('Registration failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
-        <div className="min-h-screen bg-medical-cream py-12 px-4 flex items-center justify-center">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="max-w-4xl w-full bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col md:flex-row shadow-blood/5"
-            >
-                {/* Left Side: Branding/Info */}
-                <div className="md:w-5/12 blood-gradient p-12 text-white flex flex-col justify-between">
-                    <div>
-                        <div className="bg-white/20 w-12 h-12 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md">
-                            <Droplet className="w-6 h-6 fill-white" />
-                        </div>
-                        <h2 className="text-4xl font-extrabold mb-6 leading-tight">Join the Lifeline of Our City.</h2>
-                        <p className="text-red-100 leading-relaxed font-medium">
-                            By registering as a donor, you're not just signing up for a service—you're becoming a hero for someone in their most critical moment.
-                        </p>
-                    </div>
+        <div className="min-h-screen bg-gray-50 px-6 py-12">
+            <div className="max-w-2xl mx-auto">
 
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 font-bold">1</div>
-                            <p className="text-sm font-bold uppercase tracking-widest">Register</p>
-                        </div>
-                        <div className="flex items-center gap-4 opacity-50">
-                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 font-bold">2</div>
-                            <p className="text-sm font-bold uppercase tracking-widest">Predict</p>
-                        </div>
-                        <div className="flex items-center gap-4 opacity-50">
-                            <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 font-bold">3</div>
-                            <p className="text-sm font-bold uppercase tracking-widest">Save Lives</p>
-                        </div>
+                {/* Header */}
+                <div className="text-center mb-8">
+                    <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <Droplet className="text-white w-8 h-8" />
                     </div>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
+                    <p className="text-gray-600">Join our community of life-savers</p>
                 </div>
 
-                {/* Right Side: Form */}
-                <div className="md:w-7/12 p-12">
+                {/* Form */}
+                <div className="card">
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                            {error}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Full Name</label>
+                        <div className="grid md:grid-cols-2 gap-5">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                                 <div className="relative">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                     <input
-                                        type="text"
                                         required
+                                        className="input pl-10"
                                         placeholder="John Doe"
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none"
+                                        value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Email Address</label>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
                                 <div className="relative">
-                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                     <input
                                         type="email"
                                         required
-                                        placeholder="john@example.com"
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none"
+                                        className="input pl-10"
+                                        placeholder="your@email.com"
+                                        value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     />
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Phone Number</label>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                                 <div className="relative">
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
-                                    <input
-                                        type="tel"
-                                        required
-                                        placeholder="+1 234 567 890"
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none"
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Blood Type</label>
-                                <div className="relative">
-                                    <Droplet className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
-                                    <select
-                                        required
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none appearance-none font-bold"
-                                        onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })}
-                                    >
-                                        <option value="">Select Type</option>
-                                        {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(t => <option key={t} value={t}>{t}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Location</label>
-                                <div className="relative">
-                                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
-                                    <input
-                                        type="text"
-                                        placeholder="City, State"
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none"
-                                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter ml-1">Password</label>
-                                <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 w-5 h-5" />
+                                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                                     <input
                                         type="password"
                                         required
+                                        className="input pl-10"
                                         placeholder="••••••••"
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blood outline-none"
+                                        value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     />
                                 </div>
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                    <input
+                                        required
+                                        className="input pl-10"
+                                        placeholder="+91 1234567890"
+                                        value={formData.phone}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">State</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                    <input
+                                        required
+                                        className="input pl-10"
+                                        placeholder="Your State"
+                                        value={formData.address.state}
+                                        onChange={(e) => setFormData({ ...formData, address: { ...formData.address, state: e.target.value } })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Blood Type</label>
+                                <select
+                                    className="input"
+                                    value={formData.blood_type}
+                                    onChange={(e) => setFormData({ ...formData, blood_type: e.target.value })}
+                                >
+                                    {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(type => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
-                        <button className="w-full py-4 bg-medical-navy text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all shadow-xl shadow-medical-navy/20 mt-4 group">
-                            Create My Account <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <button
+                            disabled={loading}
+                            className="btn-primary w-full"
+                        >
+                            {loading ? "Creating Account..." : "Create Account"}
                         </button>
                     </form>
 
-                    <p className="text-center mt-8 text-sm text-gray-400 font-medium">
-                        Already have an account? <Link to="/login" className="text-blood font-extrabold hover:underline">Sign In</Link>
-                    </p>
+                    <div className="mt-6 text-center text-sm text-gray-600">
+                        Already have an account? <Link to="/login" className="text-primary font-medium hover:underline">Sign In</Link>
+                    </div>
                 </div>
-            </motion.div>
+            </div>
         </div>
     );
 };

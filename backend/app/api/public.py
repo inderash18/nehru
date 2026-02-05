@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..database.mongodb import get_database
-from typing import List, Dict
+from typing import List, Dict, Optional
 import random
 
 router = APIRouter()
@@ -8,19 +8,43 @@ router = APIRouter()
 @router.get("/blood-stock")
 async def get_blood_stock():
     db = get_database()
-    stocks = await db.blood_inventory.find().to_list(100)
-    for s in stocks:
-        s["_id"] = str(s["_id"])
-    return stocks
+    pipeline = [
+        {"$group": {
+            "_id": "$blood_type",
+            "units": {"$sum": "$units"}
+        }}
+    ]
+    aggregated = await db.blood_inventory.aggregate(pipeline).to_list(100)
+    
+    # Format and add status
+    result = []
+    for item in aggregated:
+        units = item["units"]
+        status = "adequate"
+        if units < 10:
+            status = "critical"
+        elif units < 30:
+            status = "low"
+            
+        result.append({
+            "blood_type": item["_id"],
+            "units": units,
+            "status": status
+        })
+    return result
 
 @router.get("/stats")
 async def get_stats():
-    # Return some mock/real stats
+    db = get_database()
+    active_donors = await db.users.count_documents({"role": "donor"})
+    total_donations = await db.donations.count_documents({})
+    emergency_requests = await db.alerts.count_documents({"type": "emergency", "is_active": True})
+    
     return {
-        "donations_today": 42,
-        "lives_saved": 1250,
-        "active_donors": 850,
-        "emergency_requests": 3
+        "donations_today": total_donations,
+        "lives_saved": total_donations * 3, # Typical medical estimate
+        "active_donors": active_donors,
+        "emergency_requests": emergency_requests
     }
 
 @router.get("/alerts")
@@ -31,9 +55,39 @@ async def get_active_alerts():
         a["_id"] = str(a["_id"])
     return alerts
 
+@router.get("/health")
+async def health_check():
+    db = get_database()
+    try:
+        await db.command("ping")
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": str(e)}
+
 @router.get("/locations")
 async def get_locations():
-    return [
-        {"id": 1, "name": "Main Blood Bank", "lat": 40.7128, "lng": -74.0060, "address": "123 Health Ave, NY"},
-        {"id": 2, "name": "City General Hospital", "lat": 40.7306, "lng": -73.9352, "address": "456 Care St, NY"},
+    db = get_database()
+    pipeline = [
+        {"$group": {
+            "_id": "$location",
+            "lat": {"$first": "$lat"},
+            "lng": {"$first": "$lng"},
+            "blood_types_available": {"$push": "$blood_type"},
+            "total_units": {"$sum": "$units"}
+        }}
     ]
+    locations = await db.blood_inventory.aggregate(pipeline).to_list(100)
+    
+    # Format for frontend
+    result = []
+    for loc in locations:
+        result.append({
+            "id": loc["_id"],
+            "name": loc["_id"],
+            "lat": loc.get("lat", 40.7128 + random.uniform(-0.1, 0.1)),
+            "lng": loc.get("lng", -74.0060 + random.uniform(-0.1, 0.1)),
+            "status": "Adequate" if loc["total_units"] > 50 else "Low",
+            "address": f"Location at {loc['_id']}"
+        })
+        
+    return result

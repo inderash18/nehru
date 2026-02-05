@@ -2,32 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --blood-red: #e63946;
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
 }
 
-#root {
-  min-height: 100vh;
-  background-color: #f1faee;
-}
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors;
+  }
 
-body {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  .btn-secondary {
+    @apply px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-colors;
+  }
 
-.glass-morphism {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
 
-.blood-gradient {
-  background: linear-gradient(135deg, #ff4d4d 0%, #e63946 100%);
-}
-
-.medical-gradient {
-  background: linear-gradient(135deg, #1d3557 0%, #457b9d 100%);
+  .input {
+    @apply w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all;
+  }
 }

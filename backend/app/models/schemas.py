@@ -8,8 +8,12 @@ class UserBase(BaseModel):
     full_name: str
     phone: str
     blood_type: BloodType
-    date_of_birth: str
-    address: Dict[str, str]
+    date_of_birth: Optional[str] = "1990-01-01"
+    address: Optional[Dict[str, str]] = {"city": "", "state": "", "zip": ""}
+
+    class Config:
+        use_enum_values = True
+        populate_by_name = True
 
 class UserCreate(UserBase):
     password: str
@@ -33,6 +37,8 @@ class BloodInventoryBase(BaseModel):
     units: int
     threshold: int
     location: str
+    lat: Optional[float] = 40.7128
+    lng: Optional[float] = -74.0060
 
 class BloodInventoryInDB(BloodInventoryBase):
     id: str = Field(alias="_id")

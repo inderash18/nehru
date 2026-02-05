@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
+from .auth import get_current_user
 from ..database.mongodb import get_database
 from ..models.schemas import BloodInventoryBase
 from ..websocket.manager import broadcast_stock_update
@@ -32,10 +33,19 @@ async def update_inventory(item: BloodInventoryBase):
     
     return {"message": "Inventory updated"}
 
-@router.get("/donations/{donor_id}")
-async def get_donor_history(donor_id: str):
+@router.get("/inventory")
+async def get_inventory(location: str = "Central Blood Bank"):
     db = get_database()
-    donations = await db.donations.find({"donor_id": donor_id}).to_list(100)
+    cursor = db.blood_inventory.find({"location": location})
+    inventory = await cursor.to_list(length=100)
+    for item in inventory:
+        item["_id"] = str(item["_id"])
+    return inventory
+
+@router.get("/donations")
+async def get_my_history(current_user: dict = Depends(get_current_user)):
+    db = get_database()
+    donations = await db.donations.find({"donor_id": current_user["id"]}).to_list(100)
     for d in donations:
         d["_id"] = str(d["_id"])
     return donations

@@ -1,64 +1,98 @@
-import { motion } from 'framer-motion';
-import DTPSMeter from '../components/donor/DTPSMeter';
-import AppointmentScheduler from '../components/donor/AppointmentScheduler';
-import DonationHistory from '../components/donor/DonationHistory';
-import ProfileCard from '../components/donor/ProfileCard';
-import { Calendar, History, Award, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { Calendar, Droplet, MapPin, Clock } from 'lucide-react';
+import donorService from '../services/donorService';
 
 const DonorDashboard = () => {
-    return (
-        <div className="bg-medical-cream min-h-screen py-8 px-4">
-            <div className="max-w-7xl mx-auto grid lg:grid-cols-4 gap-8">
+    const { user } = useAuth();
+    const [profile, setProfile] = useState(null);
 
-                {/* Left Sidebar - Profile & DTPS */}
-                <div className="lg:col-span-1 space-y-8">
-                    <ProfileCard />
-                    <div className="bg-white p-8 rounded-[2.5rem] shadow-xl border border-white">
-                        <h3 className="text-xl font-bold mb-6 text-center">Trust Score</h3>
-                        <DTPSMeter score={92} />
-                        <p className="mt-6 text-sm text-gray-500 text-center leading-relaxed">
-                            Your DTPS score is 15% higher than average. You're a top-tier donor!
-                        </p>
+    useEffect(() => {
+        if (user) {
+            fetchProfile();
+        }
+    }, [user]);
+
+    const fetchProfile = async () => {
+        try {
+            const data = await donorService.getProfile();
+            setProfile(data);
+        } catch (error) {
+            console.error('Error fetching profile:', error);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 py-12 px-6">
+            <div className="max-w-6xl mx-auto">
+
+                {/* Header */}
+                <div className="mb-12">
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome, {user?.full_name}</h1>
+                    <p className="text-gray-600">Thank you for being a life-saver</p>
+                </div>
+
+                {/* Profile Card */}
+                <div className="grid md:grid-cols-3 gap-6 mb-12">
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Droplet className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium text-gray-600">Blood Type</span>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{user?.blood_type || 'O+'}</div>
+                    </div>
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Calendar className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium text-gray-600">Donations</span>
+                        </div>
+                        <div className="text-3xl font-bold text-gray-900">{profile?.donation_count || 0}</div>
+                    </div>
+                    <div className="card">
+                        <div className="flex items-center gap-3 mb-2">
+                            <Clock className="w-5 h-5 text-primary" />
+                            <span className="text-sm font-medium text-gray-600">Last Donation</span>
+                        </div>
+                        <div className="text-lg font-semibold text-gray-900">
+                            {profile?.last_donation || 'Never'}
+                        </div>
                     </div>
                 </div>
 
-                {/* Main Content Area */}
-                <div className="lg:col-span-3 space-y-8">
-                    <div className="grid md:grid-cols-3 gap-6">
+                {/* Upcoming Appointments */}
+                <div className="mb-12">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Upcoming Appointments</h2>
+                    <div className="card">
+                        <p className="text-gray-600 text-center py-8">No upcoming appointments</p>
+                        <button className="btn-primary w-full">Schedule Donation</button>
+                    </div>
+                </div>
+
+                {/* Nearby Blood Banks */}
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Nearby Blood Banks</h2>
+                    <div className="space-y-4">
                         {[
-                            { label: "Total Donations", val: "12", icon: History, color: "bg-blue-500" },
-                            { label: "Lives Saved", val: "36", icon: Award, color: "bg-red-500" },
-                            { label: "Next Eligibility", val: "Mar 15", icon: Calendar, color: "bg-green-500" }
-                        ].map((stat, i) => (
-                            <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center gap-4">
-                                <div className={`p-4 rounded-2xl ${stat.color} text-white`}>
-                                    <stat.icon className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-gray-400 font-bold uppercase">{stat.label}</p>
-                                    <p className="text-2xl font-bold text-medical-navy">{stat.val}</p>
+                            { name: "City Blood Bank", distance: "2.3 km", address: "123 Main Street" },
+                            { name: "General Hospital Blood Center", distance: "4.1 km", address: "456 Park Avenue" },
+                            { name: "Red Cross Blood Bank", distance: "5.8 km", address: "789 Oak Road" }
+                        ].map((bank, i) => (
+                            <div key={i} className="card hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-start gap-3">
+                                        <MapPin className="w-5 h-5 text-primary mt-1" />
+                                        <div>
+                                            <h3 className="font-semibold text-gray-900 mb-1">{bank.name}</h3>
+                                            <p className="text-sm text-gray-600">{bank.address}</p>
+                                            <p className="text-sm text-primary font-medium mt-1">{bank.distance} away</p>
+                                        </div>
+                                    </div>
+                                    <button className="btn-secondary text-sm">View Details</button>
                                 </div>
                             </div>
                         ))}
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-gray-50">
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <Calendar className="text-blood" /> Schedule Donation
-                            </h3>
-                            <AppointmentScheduler />
-                        </div>
-
-                        <div className="bg-white p-8 rounded-[2.5rem] shadow-lg border border-gray-50">
-                            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <TrendingUp className="text-blood" /> History
-                            </h3>
-                            <DonationHistory />
-                        </div>
-                    </div>
                 </div>
-
             </div>
         </div>
     );

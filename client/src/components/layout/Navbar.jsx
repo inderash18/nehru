@@ -1,51 +1,96 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Droplet, User, Bell, LogOut, Menu } from 'lucide-react';
+import { Droplet, Menu, X, User } from 'lucide-react';
+import { useState } from 'react';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
+    const location = useLocation();
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    const navLinks = [
+        { name: 'Home', path: '/' },
+        { name: 'Dashboard', path: '/dashboard' },
+        { name: 'Emergency', path: '/emergency' },
+    ];
 
     return (
-        <nav className="sticky top-0 z-50 glass-morphism shadow-sm">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16 items-center">
-                    <Link to="/" className="flex items-center gap-2 group">
-                        <div className="bg-blood p-2 rounded-lg group-hover:scale-110 transition-transform">
-                            <Droplet className="text-white w-6 h-6" />
+        <nav className="bg-white shadow-sm sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-6">
+                <div className="flex justify-between items-center h-16">
+
+                    {/* Logo */}
+                    <Link to="/" className="flex items-center gap-2 font-bold text-xl">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <Droplet className="text-white w-5 h-5" />
                         </div>
-                        <span className="text-xl font-bold text-medical-navy tracking-tight">LifeLink <span className="text-blood">AI</span></span>
+                        <span className="text-gray-900">LifeLink</span>
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium">
-                        <Link to="/dashboard" className="hover:text-blood transition-colors">Blood Stock</Link>
-                        <Link to="/emergency" className="text-red-600 font-bold hover:animate-pulse">Emergency</Link>
+                    {/* Desktop Navigation */}
+                    <div className="hidden md:flex items-center gap-8">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                className={`text-sm font-medium transition-colors ${location.pathname === link.path
+                                        ? 'text-primary'
+                                        : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                    </div>
+
+                    {/* Right Side */}
+                    <div className="flex items-center gap-4">
                         {user ? (
-                            <>
-                                <Link to={user.role === 'admin' ? '/admin' : '/donor'} className="hover:text-blood transition-colors">Dashboard</Link>
-                                <div className="flex items-center gap-4 pl-4 border-l border-gray-200">
-                                    <Bell className="w-5 h-5 text-gray-500 cursor-pointer hover:text-blood" />
-                                    <button onClick={logout} className="flex items-center gap-1 text-gray-500 hover:text-red-500">
-                                        <LogOut className="w-5 h-5" />
-                                    </button>
-                                    <div className="w-8 h-8 rounded-full bg-medical-blue flex items-center justify-center text-white text-xs font-bold ring-2 ring-white">
-                                        {user.email[0].toUpperCase()}
-                                    </div>
-                                </div>
-                            </>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-gray-600 hidden sm:block">{user.full_name}</span>
+                                <button
+                                    onClick={logout}
+                                    className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                                >
+                                    <User className="w-5 h-5 text-gray-600" />
+                                </button>
+                            </div>
                         ) : (
-                            <div className="flex items-center gap-4">
-                                <Link to="/login" className="px-4 py-2 text-medical-navy hover:text-blood transition-colors">Sign In</Link>
-                                <Link to="/register" className="px-6 py-2 bg-blood text-white rounded-full hover:bg-blood-dark transition-all transform hover:scale-105 shadow-md">
-                                    Join as Donor
+                            <div className="flex items-center gap-3">
+                                <Link to="/login" className="text-sm font-medium text-gray-600 hover:text-gray-900">
+                                    Sign In
+                                </Link>
+                                <Link to="/register" className="btn-primary text-sm">
+                                    Register
                                 </Link>
                             </div>
                         )}
-                    </div>
 
-                    <button className="md:hidden p-2 text-medical-navy">
-                        <Menu className="w-6 h-6" />
-                    </button>
+                        {/* Mobile Menu Toggle */}
+                        <button
+                            className="md:hidden p-2"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                        >
+                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                        </button>
+                    </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <div className="md:hidden py-4 border-t">
+                        {navLinks.map((link) => (
+                            <Link
+                                key={link.name}
+                                to={link.path}
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block py-2 text-sm font-medium text-gray-600 hover:text-gray-900"
+                            >
+                                {link.name}
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
         </nav>
     );
