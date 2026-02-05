@@ -42,6 +42,8 @@ const PublicDashboard = () => {
             const statsData = await bloodService.getStats();
             setActiveDonorsCount(statsData.active_donors);
 
+            console.log(`[LifeLink] Fetched ${data.length} stock records at ${new Date().toLocaleTimeString()}`, data);
+
             const locRes = await api.get('/public/locations');
             setLocationsCount(locRes.data.length);
 
@@ -58,7 +60,20 @@ const PublicDashboard = () => {
         ));
     };
 
-    const displayStocks = stocks; // Use real data only
+    const [searchTerm, setSearchTerm] = useState('');
+
+    // Ensure all 8 blood types are represented even if DB is empty for some
+    const allBloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+    const mergedStocks = allBloodTypes.map(type => {
+        const found = stocks.find(s => s.blood_type === type);
+        return found || { blood_type: type, units: 0, status: 'critical' };
+    });
+
+    const displayStocks = mergedStocks.filter(stock =>
+        stock.blood_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (stock.location && stock.location.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
 
     // Calculate dynamic stats
     const criticalCount = displayStocks.filter(s => s.status === 'critical').length;
@@ -85,8 +100,10 @@ const PublicDashboard = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                         <input
                             type="text"
-                            placeholder="Search by blood type or location..."
-                            className="input pl-10"
+                            placeholder="Search by blood type (e.g. A+) or location..."
+                            className="input pl-10 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>

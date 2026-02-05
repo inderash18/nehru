@@ -1,6 +1,7 @@
 import os
 import pickle
 import logging
+from .survival_time_engine import SurvivalTimeEngine
 
 # Optional ML dependencies
 try:
@@ -84,4 +85,46 @@ def calculate_dtps(factors: dict) -> dict:
             "recency": recency,
             "distance": distance
         }
+    }
+
+def calculate_time_aware_score(donor: dict, hospital: dict, blood_type_needed: str = "Whole Blood") -> dict:
+    """
+    Optimized ranking based on Survival-Time Optimization Engine (STOE).
+    GOAL: Minimize Expected Blood Arrival Time (EBAT).
+    """
+    
+    # 1. Base DTPS Score
+    # Map donor dict to factors expected by calculate_dtps
+    factors = {
+        "attendance_rate": donor.get("history", {}).get("attendance_rate", 0.5),
+        "last_donation_months": donor.get("history", {}).get("months_since_last_donation", 12),
+        "distance_score": 0.5, # In real app, derived from travel time
+        "is_emergency": True
+    }
+    
+    dtps_result = calculate_dtps(factors)
+    dtps_score = dtps_result["final_score"]
+    
+    # 2. Compute EBAT
+    stoe_result = SurvivalTimeEngine.compute_ebat(donor, hospital, blood_type_needed)
+    ebat_minutes = stoe_result["ebat_minutes"]
+    
+    # 3. Normalize EBAT (Lower is better, so we invert)
+    # Range: 0 to 1
+    normalized_ebat = 1 / (1 + ebat_minutes)
+    
+    # 4. Final Weighted Score
+    # Score = (0.6 * Time_Optimality) + (0.4 * Reliability_Score)
+    final_score = (0.6 * normalized_ebat * 100) + (0.4 * dtps_score)
+    
+    # Medical Override (e.g., if donor is not eligible, score is 0)
+    if not donor.get("is_medically_eligible", True):
+        final_score = 0
+
+    return {
+        "donor_id": donor.get("id"),
+        "final_score": round(final_score, 2),
+        "dtps_component": dtps_score,
+        "ebat_minutes": ebat_minutes,
+        "ebat_breakdown": stoe_result["breakdown"]
     }

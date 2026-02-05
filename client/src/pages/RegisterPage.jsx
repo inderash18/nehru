@@ -61,7 +61,7 @@ const RegisterPage = () => {
                                     <input
                                         required
                                         className="input pl-10"
-                                        placeholder="John Doe"
+                                        placeholder="name"
                                         value={formData.full_name}
                                         onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                     />
@@ -91,7 +91,7 @@ const RegisterPage = () => {
                                         type="password"
                                         required
                                         className="input pl-10"
-                                        placeholder="••••••••"
+                                        placeholder="*******"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     />
@@ -105,7 +105,7 @@ const RegisterPage = () => {
                                     <input
                                         required
                                         className="input pl-10"
-                                        placeholder="+91 1234567890"
+                                        placeholder="number"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                     />
@@ -142,7 +142,7 @@ const RegisterPage = () => {
 
                         <button
                             disabled={loading}
-                            className="btn-primary w-full"
+                            className="btn-primary w-full "
                         >
                             {loading ? "Creating Account..." : "Create Account"}
                         </button>

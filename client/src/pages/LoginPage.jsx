@@ -16,8 +16,14 @@ const LoginPage = () => {
         setLoading(true);
         setError(null);
         try {
-            await login(email, password);
-            navigate('/donor');
+            const userData = await login(email, password);
+
+            // Role-based redirection
+            if (userData.role === 'admin' || userData.is_superuser) {
+                navigate('/admin');
+            } else {
+                navigate('/donor');
+            }
         } catch (err) {
             setError('Invalid credentials. Please try again.');
         } finally {

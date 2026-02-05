@@ -1,7 +1,21 @@
+import { useState } from 'react';
 import { Phone, AlertCircle, MapPin, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const EmergencyPage = () => {
+    const [locationSearch, setLocationSearch] = useState('');
+
+    const handleRespond = (hospital) => {
+        // In a real app, this would open a specific response flow
+        alert(`Connecting you to ${hospital} emergency coordination...`);
+    };
+
+    const handleLocationSearch = () => {
+        if (!locationSearch.trim()) return;
+        // In a real app, this would query the maps API
+        alert(`Searching for blood banks near "${locationSearch}"... found 3 centers.`);
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
 
@@ -35,8 +49,8 @@ const EmergencyPage = () => {
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div className="flex items-start gap-4">
                                         <div className={`w-3 h-3 rounded-full mt-1.5 ${request.urgency === 'critical' ? 'bg-red-500' :
-                                                request.urgency === 'high' ? 'bg-orange-500' :
-                                                    'bg-yellow-500'
+                                            request.urgency === 'high' ? 'bg-orange-500' :
+                                                'bg-yellow-500'
                                             }`} />
                                         <div>
                                             <h3 className="font-semibold text-gray-900 mb-1">{request.location}</h3>
@@ -52,7 +66,10 @@ const EmergencyPage = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="btn-primary whitespace-nowrap">
+                                    <button
+                                        onClick={() => handleRespond(request.location)}
+                                        className="btn-primary whitespace-nowrap"
+                                    >
                                         Respond
                                     </button>
                                 </div>
@@ -67,12 +84,16 @@ const EmergencyPage = () => {
                         <MapPin className="w-8 h-8 text-primary mb-4" />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Find Nearest Blood Bank</h3>
                         <p className="text-gray-600 mb-4">Locate blood banks within 10km of your location</p>
-                        <input
-                            type="text"
-                            placeholder="Enter your location"
-                            className="input mb-3"
-                        />
-                        <button className="btn-primary w-full">Search</button>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="Enter your location city..."
+                                className="input flex-1"
+                                value={locationSearch}
+                                onChange={(e) => setLocationSearch(e.target.value)}
+                            />
+                            <button onClick={handleLocationSearch} className="btn-primary">Search</button>
+                        </div>
                     </div>
 
                     <div className="card">

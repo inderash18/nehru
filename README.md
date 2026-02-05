@@ -74,7 +74,7 @@ npm run dev
 ### Collections
 
 - `users` - All registered users
-- `blood_stocks` - Blood inventory
+- `blood_inventory` - Blood inventory (Use this for stock levels!)
 - `donations` - Donation history
 - `requests` - Emergency requests
 - `appointments` - Scheduled donations

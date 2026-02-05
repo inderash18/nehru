@@ -32,7 +32,7 @@
 │                                                                 │
 │  Collections:                                                   │
 │  ├── users           → All registered users                    │
-│  ├── blood_stocks    → Blood inventory data                    │
+│  ├── blood_inventory → Blood inventory data (Use this!)        │
 │  ├── donations       → Donation history                        │
 │  ├── requests        → Emergency blood requests                │
 │  └── appointments    → Scheduled donations                     │

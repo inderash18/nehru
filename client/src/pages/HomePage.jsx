@@ -86,26 +86,29 @@ const HomePage = () => {
                             {
                                 icon: Users,
                                 title: "Register as Donor",
-                                desc: "Create your profile and specify your blood type and availability."
+                                desc: "Create your profile and specify your blood type and availability.",
+                                link: "/register"
                             },
                             {
                                 icon: MapPin,
                                 title: "Find Nearby Centers",
-                                desc: "Locate blood banks and donation centers in your area."
+                                desc: "Locate blood banks and donation centers in your area.",
+                                link: "/dashboard"
                             },
                             {
                                 icon: Calendar,
                                 title: "Schedule Donation",
-                                desc: "Book appointments at your convenience and save lives."
+                                desc: "Book appointments at your convenience and save lives.",
+                                link: "/login"
                             }
                         ].map((feature, i) => (
-                            <div key={i} className="card text-center hover:shadow-md transition-shadow">
-                                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <Link key={i} to={feature.link} className="card text-center hover:shadow-md transition-shadow group cursor-pointer block">
+                                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
                                     <feature.icon className="w-6 h-6 text-primary" />
                                 </div>
-                                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                                <h3 className="text-xl font-semibold mb-3 text-gray-900">{feature.title}</h3>
                                 <p className="text-gray-600">{feature.desc}</p>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </div>
