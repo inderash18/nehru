@@ -1,0 +1,19 @@
+# Core API
+fastapi
+uvicorn
+motor
+pydantic[email]
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+python-socketio
+python-dotenv
+requests
+apscheduler
+bcrypt
+
+# ML (Optional - may require C++ Build Tools)
+# scikit-learn
+# xgboost
+# pandas
+# numpy
